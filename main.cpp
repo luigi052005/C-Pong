@@ -4,49 +4,54 @@
 #include <random>
 #include <raylib.h>
 
+// Struct to represent a ball
 struct Ball
 {
-	float x, y;
-	float speedX, speedY; 
-	float startSpeed; 
-	float minSpeed;
-	float maxSpeed;
-	float radius;
-	Color color;
+	float x, y;             // Position of the ball
+	float speedX, speedY;   // Horizontal and vertical speed of the ball
+	float startSpeed;       // Initial speed of the ball
+	float minSpeed;         // Minimum speed limit
+	float maxSpeed;         // Maximum speed limit
+	float radius;           // Radius of the ball
+	Color color;            // Color of the ball
 
+	// Function to draw the ball
 	void Draw()
 	{
 		DrawCircle((int)x, (int)y, radius, color);
 	}
 };
 
+// Struct to represent a paddle
 struct Paddle
 {
-	int score;
-	float x, y;
-	float speed; 
-	float width, height;
-	bool bot;
-	Color color;
+	int score;              // Score of the paddle
+	float x, y;             // Position of the paddle
+	float speed;            // Speed of the paddle
+	float width, height;    // Width and height of the paddle
+	bool bot;               // Flag to indicate if it's a bot paddle
+	Color color;            // Color of the paddle
 
+	// Function to get the rectangle representation of the paddle
 	Rectangle GetRect()
 	{
 		return Rectangle{ x - width / 2, y - height / 2, 10, 100 };
 	}
 
+	// Function to draw the paddle
 	void Draw()
 	{
 		DrawRectangleRec(GetRect(), color);
 	}
 };
 
-Ball ball;
-Paddle leftPaddle;
-Paddle rightPaddle;
-const char* winner = nullptr;
-bool vsync = false;
+Ball ball;                  // Instance of the Ball struct
+Paddle leftPaddle;          // Instance of the Paddle struct for the left paddle
+Paddle rightPaddle;         // Instance of the Paddle struct for the right paddle
+const char* winner = nullptr; // String to store the winner message
+bool vsync = false;         // Flag to control vertical synchronization
 
-//MATH
+// Math functions
 float lerp(float start, float end, float t)
 {
 	return start + t * (end - start);
@@ -67,7 +72,8 @@ float randomDirection(float speed)
 		return speed;
 	}
 }
-//SETVARS
+
+// Function to initialize the game state
 void initialization()
 {
 	winner = nullptr;
@@ -96,7 +102,7 @@ void initialization()
 	rightPaddle.color = WHITE;
 }
 
-//BOT
+// Function to control the bot paddles
 void paddleBot()
 {
 	if (rightPaddle.bot)
@@ -105,7 +111,7 @@ void paddleBot()
 		leftPaddle.y = lerp(leftPaddle.y, ball.y, 10.00f * GetFrameTime());
 }
 
-//INPUT
+// Function to handle input toggles
 void toggle()
 {
 	if (IsKeyPressed(KEY_B))
@@ -122,11 +128,11 @@ void toggle()
 	}
 	if (vsync)
 		SetWindowState(FLAG_VSYNC_HINT);
-	else 
+	else
 		ClearWindowState(FLAG_VSYNC_HINT);
-
 }
 
+// Function to handle input for the left player
 void leftPlayer()
 {
 	if (!leftPaddle.bot)
@@ -143,6 +149,7 @@ void leftPlayer()
 	leftPaddle.y = clamp(leftPaddle.y, 50, GetScreenHeight() - 50);
 }
 
+// Function to handle input for the right player
 void rightPlayer()
 {
 	if (!rightPaddle.bot)
@@ -159,17 +166,17 @@ void rightPlayer()
 	rightPaddle.y = clamp(rightPaddle.y, 50, GetScreenHeight() - 50);
 }
 
-//MOVEBALL
+// Function to move the ball
 void moveBall()
 {
-	//MOVEBALL
 	ball.x += ball.speedX * GetFrameTime();
 	ball.y += ball.speedY * GetFrameTime();
 }
 
-//COLLISION
+// Function to handle collisions
 void collosion()
 {
+	// Collision with top and bottom walls
 	if (ball.y > GetScreenHeight() - ball.radius / 2)
 	{
 		ball.y = GetScreenHeight() - ball.radius / 2;
@@ -180,6 +187,8 @@ void collosion()
 		ball.y = 0 + ball.radius / 2;
 		ball.speedY *= -1;
 	}
+
+	// Collision with left paddle
 	if (CheckCollisionCircleRec(Vector2{ ball.x, ball.y }, ball.radius, leftPaddle.GetRect()))
 	{
 		if (ball.speedX < 0)
@@ -194,6 +203,7 @@ void collosion()
 		}
 	}
 
+	// Collision with right paddle
 	if (CheckCollisionCircleRec(Vector2{ ball.x, ball.y }, ball.radius, rightPaddle.GetRect()))
 	{
 		if (ball.speedX > 0)
@@ -209,7 +219,7 @@ void collosion()
 	}
 }
 
-//WINNING
+// Function to check for winning conditions
 void winning()
 {
 	if (rightPaddle.score >= 5)
@@ -298,7 +308,7 @@ void render()
 int main()
 {	
 	InitWindow(1200, 900, "Pong!");
-	//SetTargetFPS(1500);
+	SetTargetFPS(60);
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
 	rightPaddle.bot = true;
 
